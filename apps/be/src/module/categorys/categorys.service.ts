@@ -1,21 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Category, CategoryDocument } from './entities/category.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class CategorysService {
   constructor(
-    @InjectModel(Category.name) readonly model: Model<CategoryDocument>
+    @InjectModel(Category.name) readonly categoryModel: Model<CategoryDocument>
   ) {}
-  create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+  async create(body: CreateCategoryDto) {
+    const data = await this.categoryModel.findOne({
+      $or: [
+        { name: body.name },
+        { _id: { $ne: new Types.ObjectId(body.prarentId) } },
+      ],
+    });
+    return this.categoryModel.create(body);
   }
 
   findAll() {
-    return `This action returns all categorys`;
+    return;
   }
 
   findOne(id: number) {
